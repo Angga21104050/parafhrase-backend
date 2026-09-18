@@ -129,4 +129,33 @@ class PenjokiController extends Controller
             'documents' => $documents,
         ]);
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => [
+                'required',
+                'in:IN_PROGRESS,COMPLETED,CANCELLED',
+            ],
+        ]);
+
+        $document = Document::where('id', $id)
+            ->where('penjoki_id', $request->user()->id)
+            ->first();
+
+        if (!$document) {
+            return response()->json([
+                'message' => 'Dokumen tidak tersedia atau bukan tugas Anda',
+            ], 404);
+        }
+
+        $document->update([
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json([
+            'message' => 'Status dokumen berhasil diperbarui',
+            'document' => $document,
+        ]);
+    }
 }

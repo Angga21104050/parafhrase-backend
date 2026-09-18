@@ -65,6 +65,11 @@ Route::middleware('auth:sanctum')->group(function () {
                 'download'
             ]);
 
+            Route::patch('/documents/{id}/status', [
+                PenjokiController::class,
+                'updateStatus'
+            ]);
+
             Route::post('/documents/{id}/result', [
                 PenjokiController::class,
                 'uploadResult'
@@ -75,7 +80,35 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin')
         ->prefix('admin')
         ->group(function () {
-            Route::get('/dashboard', [AdminController::class, 'dashboard']);
-            Route::get('/documents', [AdminController::class, 'documents']);
+
+            Route::get('/dashboard', [
+                AdminController::class,
+                'dashboard'
+            ]);
+
+            Route::get('/documents', [
+                AdminController::class,
+                'documents'
+            ]);
+
+            Route::get('/documents/{id}', [
+                AdminController::class,
+                'showDocument'
+            ]);
+
+            Route::patch('/documents/{id}/status', [
+                AdminController::class,
+                'updateStatus'
+            ]);
+
+            Route::get('/customers', [
+                AdminController::class,
+                'customers'
+            ]);
+
+            Route::get('/penjokis', [
+                AdminController::class,
+                'penjokis'
+            ]);
         });
 });
