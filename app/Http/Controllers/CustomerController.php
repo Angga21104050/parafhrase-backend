@@ -18,12 +18,25 @@ class CustomerController extends Controller
 
     public function index(Request $request)
     {
-        $documents = Document::where(
+        $validated = $request->validate([
+            'status' => [
+                'nullable',
+                'in:PENDING,IN_PROGRESS,COMPLETED,CANCELLED',
+            ],
+        ]);
+
+        $query = Document::where(
             'user_id',
             $request->user()->id
-        )
+        );
+
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        $documents = $query
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'message' => 'Daftar dokumen berhasil diambil',

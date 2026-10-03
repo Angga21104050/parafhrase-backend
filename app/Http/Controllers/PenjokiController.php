@@ -21,7 +21,7 @@ class PenjokiController extends Controller
         $documents = Document::where('status', 'PENDING')
             ->whereNull('penjoki_id')
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'message' => 'Daftar dokumen yang tersedia untuk dijoki',
@@ -117,15 +117,28 @@ class PenjokiController extends Controller
 
     public function myDocuments(Request $request)
     {
-        $documents = Document::where(
+        $validated = $request->validate([
+            'status' => [
+                'nullable',
+                'in:PENDING,IN_PROGRESS,COMPLETED,CANCELLED',
+            ],
+        ]);
+
+        $query = Document::where(
             'penjoki_id',
             $request->user()->id
-        )
+        );
+
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        $documents = $query
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
-            'message' => 'Daftar dokumen yang saya ambil',
+            'message' => 'Daftar dokumen saya berhasil diambil',
             'documents' => $documents,
         ]);
     }
@@ -147,6 +160,20 @@ class PenjokiController extends Controller
             return response()->json([
                 'message' => 'Dokumen tidak tersedia atau bukan tugas Anda',
             ], 404);
+        }
+
+        // Status hanya boleh diubah dari IN_PROGRESS
+        if ($document->status !== 'IN_PROGRESS') {
+            return response()->json([
+                'message' => 'Status dokumen tidak dapat diubah lagi',
+            ], 400);
+        }
+
+        // COMPLETED harus menggunakan uploadResult()
+        if ($validated['status'] === 'COMPLETED') {
+            return response()->json([
+                'message' => 'Untuk menyelesaikan dokumen, silakan upload hasil terlebih dahulu',
+            ], 400);
         }
 
         $document->update([

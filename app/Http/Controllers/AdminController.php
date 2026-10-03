@@ -41,17 +41,30 @@ class AdminController extends Controller
         ]);
     }
 
-    public function documents()
+    public function documents(Request $request)
     {
-        $documents = Document::with([
+        $validated = $request->validate([
+            'status' => [
+                'nullable',
+                'in:PENDING,IN_PROGRESS,COMPLETED,CANCELLED',
+            ],
+        ]);
+
+        $query = Document::with([
             'user:id,name,email,role',
             'penjoki:id,name,email,role'
-        ])
+        ]);
+
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        $documents = $query
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
-            'message' => 'Daftar semua dokumen berhasil diambil',
+            'message' => 'Daftar dokumen berhasil diambil',
             'documents' => $documents,
         ]);
     }
