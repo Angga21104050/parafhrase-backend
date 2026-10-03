@@ -34,6 +34,7 @@ class PenjokiController extends Controller
         $document = Document::where('id', $id)
             ->where('status', 'PENDING')
             ->whereNull('penjoki_id')
+            ->where('user_id', '!=', $request->user()->id)
             ->first();
 
         if (!$document) {
@@ -101,17 +102,17 @@ class PenjokiController extends Controller
 
         $file = $validated['result'];
 
-        $path = $file->store('documents/result');
+        $filename = 'result_' . $document->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        $path = $file->storeAs(
+            'documents/result',
+            $filename
+        );
 
         $document->update([
-            'result_filename' => $file->getClientOriginalName(),
+            'result_filename' => $filename,
             'result_path' => $path,
             'status' => 'COMPLETED',
-        ]);
-
-        return response()->json([
-            'message' => 'Hasil parafrase berhasil diupload',
-            'document' => $document,
         ]);
     }
 

@@ -74,7 +74,7 @@ class AdminController extends Controller
         $customers = User::where('role', 'user')
             ->select('id', 'name', 'email', 'role', 'created_at')
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'message' => 'Daftar semua customer berhasil diambil',
@@ -87,7 +87,7 @@ class AdminController extends Controller
         $penjokis = User::where('role', 'penjoki')
             ->select('id', 'name', 'email', 'role', 'created_at')
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'message' => 'Daftar penjoki berhasil diambil',
